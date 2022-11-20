@@ -249,7 +249,15 @@ class CakeMigration extends CakeObject {
 			throw $e;
 		}
 
-		return $this->db->commit($null);
+		try {
+			return $this->db->commit($null);
+		} catch (Exception $e) {
+			// MySQLではDDL statementが暗黙的にコミットされ、PHP8のPDO::commitでエラーが発生する
+			if ($e->getMessage() === 'There is no active transaction') {
+				return true;
+			}
+			throw $e;
+		}
 	}
 
 /**
